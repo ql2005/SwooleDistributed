@@ -8,7 +8,6 @@
 
 namespace Server\Components\Process;
 
-
 use Server\Components\Event\Event;
 use Server\CoreBase\Child;
 use Server\CoreBase\RPCThrowable;
@@ -43,7 +42,7 @@ abstract class ProcessRPC extends Child
      */
     public function phaseProxy($object)
     {
-        $reflection = new \ReflectionClass (get_class($object));
+        $reflection = new \ReflectionClass(get_class($object));
         $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
         //遍历所有的方法
         foreach ($methods as $method) {
@@ -146,13 +145,15 @@ abstract class ProcessRPC extends Child
     {
         if (get_instance()->isUserProcess($worker_id)) {
             $process = ProcessManager::getInstance()->getProcessFromID($worker_id);
-            if ($process == null) return;
+            if ($process == null) {
+                return;
+            }
             if ($worker_id == get_instance()->workerId) {
                 $process->readData($data);
             } else {
                 //封装下协议
-                $data = \swoole_serialize::pack($data);
-                $data = pack("N",strlen($data)+4).$data;
+                $data = serialize($data);
+                $data = pack("N", strlen($data)+4).$data;
                 $process->process->write($data);
             }
         } else {
